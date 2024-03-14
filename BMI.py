@@ -1,123 +1,101 @@
 import tkinter as tk
-from tkinter import ttk
 from tkinter import messagebox
-import time
+from tkinter import ttk
+import string
+import random
+import pyperclip
 
-def calculate_bmi(weight, height):
-    bmi = weight / (height ** 2)
-    return bmi
+def generate_password():
+    length = length_var.get()
+    if length <= 0:
+        messagebox.showerror("Error", "Please enter a valid password length.")
+        return
 
+    character_set = ''
+    if uppercase_var.get():
+        character_set += string.ascii_uppercase
+    if lowercase_var.get():
+        character_set += string.ascii_lowercase
+    if digits_var.get():
+        character_set += string.digits
+    if symbols_var.get():
+        character_set += string.punctuation
 
-def get_bmi_category(bmi):
-    if bmi < 18.5:
-        return "Underweight"
-    elif 18.5 <= bmi < 25:
-        return "Normal Weight"
-    elif 25 <= bmi < 30:
-        return "Overweight"
+    if not character_set:
+        messagebox.showerror("Error", "Please select at least one character set.")
+        return
+
+    password = ''.join(random.choice(character_set) for _ in range(length))
+    password_entry.delete(0, 'end')
+    password_entry.insert('end', password)
+
+def copy_password():
+    password = password_entry.get()
+    if password:
+        pyperclip.copy(password)
+        messagebox.showinfo("Password Copied", "Password copied to clipboard successfully!")
     else:
-        return "Obese"
-
-
-def animate_widget(widget, animation, duration=0.1, repeat=5):
-    for _ in range(repeat):
-        for style, value in animation:
-            widget.configure(**{style: value})
-            root.update()
-            time.sleep(duration)
-
-
-def calculate():
-    weight = float(weight_entry.get())
-    height = float(height_entry.get())
-
-    if weight_unit_var.get() == "lbs":
-        weight = weight * 0.453592
-
-    if height_unit_var.get() == "feet":
-        height = height * 0.3048
-
-    bmi = calculate_bmi(weight, height)
-    bmi_category = get_bmi_category(bmi)
-
-    bmi_label.config(text="BMI: {:.2f}".format(bmi))
-    category_label.config(text="Category: {}".format(bmi_category))
-
-    weight_range = get_weight_range(height)
-    height_range = get_height_range(weight)
-
-    weight_range_label.config(text="Suggested Weight Range: {:.2f} - {:.2f} kg".format(weight_range[0], weight_range[1]))
-    height_range_label.config(text="Suggested Height Range: {:.2f} - {:.2f} meters".format(height_range[0], height_range[1]))
-
-    animate_widget(bmi_label, [("background", "green"), ("background", "SystemButtonFace")])
-    animate_widget(category_label, [("background", "yellow"), ("background", "SystemButtonFace")])
-    animate_widget(weight_range_label, [("background", "orange"), ("background", "SystemButtonFace")])
-    animate_widget(height_range_label, [("background", "red"), ("background", "SystemButtonFace")])
-
-    animate_widget(calculate_button, [("background", "green"), ("background", "#4CAF50")])
-
-
-def get_weight_range(height):
-    lower_limit = 18.5 * (height ** 2)
-    upper_limit = 24.9 * (height ** 2)
-    return lower_limit, upper_limit
-
-
-def get_height_range(weight):
-    lower_limit = (weight / 24.9) ** 0.5
-    upper_limit = (weight / 18.5) ** 0.5
-    return lower_limit, upper_limit
-
+        messagebox.showwarning("No Password", "No password to copy!")
 
 root = tk.Tk()
-root.title("BMI Calculator")
-root.geometry("600x400")
+root.title("Random Password Generator")
+root.geometry("500x500")
 root.configure(bg="#f0f0f0")
 
-style = ttk.Style()
-style.configure('TButton', background='#4CAF50')
-style.map('TButton', background=[('active', '#43A047')])
+frame = tk.Frame(root, bg="#f0f0f0")
+frame.pack(expand=True, padx=20, pady=20)
 
-main_frame = ttk.Frame(root, padding="20")
-main_frame.pack(expand=True, fill="both")
+length_label = tk.Label(frame, text="Password Length:", bg="#f0f0f0", font=("Helvetica", 12))
+length_label.grid(row=0, column=0, sticky="w", pady=5)
 
-weight_label = ttk.Label(main_frame, text="Weight:", font=("Helvetica", 12))
-weight_label.grid(row=0, column=0, sticky="w")
+length_var = tk.IntVar()
+length_entry = tk.Entry(frame, textvariable=length_var, font=("Helvetica", 12))
+length_entry.grid(row=0, column=1, sticky="w", pady=5)
 
-weight_entry = ttk.Entry(main_frame)
-weight_entry.grid(row=0, column=1)
-weight_entry_animation = [("background", "green"), ("background", "SystemButtonFace")]
+uppercase_var = tk.BooleanVar()
+uppercase_checkbox = tk.Checkbutton(frame, text="Uppercase", variable=uppercase_var, bg="#f0f0f0", font=("Helvetica", 10))
+uppercase_checkbox.grid(row=1, column=0, sticky="w", pady=2)
 
-weight_unit_var = tk.StringVar(value="kgs")
-weight_unit_combo = ttk.Combobox(main_frame, textvariable=weight_unit_var, values=("kgs", "lbs"), state="readonly", width=5)
-weight_unit_combo.grid(row=0, column=2, padx=5)
-weight_unit_combo_animation = [("background", "green"), ("background", "SystemButtonFace")]
+lowercase_var = tk.BooleanVar()
+lowercase_checkbox = tk.Checkbutton(frame, text="Lowercase", variable=lowercase_var, bg="#f0f0f0", font=("Helvetica", 10))
+lowercase_checkbox.grid(row=2, column=0, sticky="w", pady=2)
 
-height_label = ttk.Label(main_frame, text="Height:", font=("Helvetica", 12))
-height_label.grid(row=1, column=0, sticky="w")
+digits_var = tk.BooleanVar()
+digits_checkbox = tk.Checkbutton(frame, text="Digits", variable=digits_var, bg="#f0f0f0", font=("Helvetica", 10))
+digits_checkbox.grid(row=3, column=0, sticky="w", pady=2)
 
-height_entry = ttk.Entry(main_frame)
-height_entry.grid(row=1, column=1)
-height_entry_animation = [("background", "green"), ("background", "SystemButtonFace")]
+symbols_var = tk.BooleanVar()
+symbols_checkbox = tk.Checkbutton(frame, text="Symbols", variable=symbols_var, bg="#f0f0f0", font=("Helvetica", 10))
+symbols_checkbox.grid(row=4, column=0, sticky="w", pady=2)
 
-height_unit_var = tk.StringVar(value="meters")
-height_unit_combo = ttk.Combobox(main_frame, textvariable=height_unit_var, values=("meters", "feet"), state="readonly", width=5)
-height_unit_combo.grid(row=1, column=2, padx=5)
-height_unit_combo_animation = [("background", "green"), ("background", "SystemButtonFace")]
+generate_button = tk.Button(frame, text="Generate Password", command=generate_password, bg="#4CAF50", fg="white", font=("Helvetica", 12, "bold"))
+generate_button.grid(row=5, column=0, columnspan=2, pady=10)
 
-calculate_button = ttk.Button(main_frame, text="Calculate", command=calculate, style='TButton')
-calculate_button.grid(row=2, column=0, columnspan=3, pady=10)
+password_entry = tk.Entry(frame, show="*", font=("Helvetica", 14), justify="center")
+password_entry.grid(row=6, column=0, columnspan=2, pady=10)
 
-bmi_label = ttk.Label(main_frame, text="BMI: ", font=("Helvetica", 12))
-bmi_label.grid(row=3, column=0, sticky="w")
+copy_button = tk.Button(frame, text="Copy Password", command=copy_password, bg="#008CBA", fg="white", font=("Helvetica", 12, "bold"))
+copy_button.grid(row=7, column=0, columnspan=2)
 
-category_label = ttk.Label(main_frame, text="Category: ", font=("Helvetica", 12))
-category_label.grid(row=4, column=0, sticky="w")
+def on_enter(event):
+    event.widget.config(bg="#5EBABA")
 
-weight_range_label = ttk.Label(main_frame, text="Suggested Weight Range: ", font=("Helvetica", 12))
-weight_range_label.grid(row=5, column=0, sticky="w")
+def on_leave(event):
+    event.widget.config(bg="#008CBA" if event.widget == copy_button else "#4CAF50")
 
-height_range_label = ttk.Label(main_frame, text="Suggested Height Range: ", font=("Helvetica", 12))
-height_range_label.grid(row=6, column=0, sticky="w")
+copy_button.bind("<Enter>", on_enter)
+copy_button.bind("<Leave>", on_leave)
+
+generate_button.bind("<Enter>", on_enter)
+generate_button.bind("<Leave>", on_leave)
+
+def pulsate_animation(widget):
+    def animate():
+        widget.config(bg="#5EBABA")
+        widget.after(500, lambda: widget.config(bg="#4CAF50"))
+        widget.after(1000, animate)
+    animate()
+
+pulsate_animation(generate_button)
 
 root.mainloop()
